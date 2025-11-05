@@ -9,20 +9,15 @@ import {
   TableRow,
   TableCell,
   TableCellLayout,
-  Input,
+  SearchBox,
   Dropdown,
   Option,
-  Label,
+  Title3,
+  Badge,
+  Button,
   makeStyles,
   tokens,
   shorthands,
-  Badge,
-  SearchBox,
-  Title3,
-  Card,
-  CardHeader,
-  CardFooter,
-  CardPreview,
 } from "@fluentui/react-components";
 
 interface ITicket {
@@ -39,6 +34,10 @@ const dummyTickets: ITicket[] = [
   { id: "2", zone: "Adama", serviceNumber: "SR-2023-002", handler: "Daniel", status: "Pending", duration: "05:41" },
   { id: "3", zone: "Addis Ababa", serviceNumber: "SR-2023-003", handler: "Betelhem", status: "In-Progress", duration: "01:55" },
   { id: "4", zone: "Hawassa", serviceNumber: "SR-2023-004", handler: "Mekdes", status: "Resolved", duration: "02:10" },
+  { id: "5", zone: "Adama", serviceNumber: "SR-2023-005", handler: "Sami", status: "Resolved", duration: "02:59" },
+  { id: "6", zone: "Hawassa", serviceNumber: "SR-2023-006", handler: "Lidiya", status: "Pending", duration: "04:21" },
+  { id: "7", zone: "Addis Ababa", serviceNumber: "SR-2023-007", handler: "Abel", status: "In-Progress", duration: "03:44" },
+  { id: "8", zone: "Adama", serviceNumber: "SR-2023-008", handler: "Hanna", status: "Resolved", duration: "01:28" },
 ];
 
 const useStyles = makeStyles({
@@ -59,6 +58,12 @@ const useStyles = makeStyles({
     borderRadius: tokens.borderRadiusLarge,
     boxShadow: tokens.shadow4,
   },
+  pagination: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "6px",
+    marginTop: "18px",
+  },
 });
 
 export default function TTResultsPage() {
@@ -66,10 +71,11 @@ export default function TTResultsPage() {
 
   const [searchText, setSearchText] = React.useState("");
   const [filterZone, setFilterZone] = React.useState("All");
+  const [currentPage, setCurrentPage] = React.useState(1);
 
+  const pageSize = 5;
   const zones = ["All", "Addis Ababa", "Adama", "Hawassa"];
 
-  // FILTER
   const filtered = dummyTickets
     .filter((t) => (filterZone !== "All" ? t.zone === filterZone : true))
     .filter(
@@ -77,6 +83,10 @@ export default function TTResultsPage() {
         t.serviceNumber.toLowerCase().includes(searchText.toLowerCase()) ||
         t.handler.toLowerCase().includes(searchText.toLowerCase())
     );
+
+  // --- PAGINATION ---
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const pageData = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const getStatusBadge = (status: ITicket["status"]) => {
     const styles: any = {
@@ -87,6 +97,10 @@ export default function TTResultsPage() {
     return <Badge {...styles[status]}>{status}</Badge>;
   };
 
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+  };
+
   return (
     <div className={styles.pageWrapper}>
       <Title3>Service Ticket Results</Title3>
@@ -94,17 +108,22 @@ export default function TTResultsPage() {
         Real-time operational insight & service completion details
       </p>
 
-      {/* Filters */}
       <div className={styles.filterBar}>
         <SearchBox
           placeholder="Search by ticket or handler..."
-          onChange={(_, data) => setSearchText(data.value)}
+          onChange={(_, data) => {
+            setSearchText(data.value);
+            setCurrentPage(1);
+          }}
           style={{ width: "240px" }}
         />
 
         <Dropdown
           value={filterZone}
-          onOptionSelect={(_, data) => setFilterZone(data.optionText!)}
+          onOptionSelect={(_, data) => {
+            setFilterZone(data.optionText!);
+            setCurrentPage(1);
+          }}
           style={{ width: "180px" }}
         >
           {zones.map((z) => (
@@ -113,7 +132,6 @@ export default function TTResultsPage() {
         </Dropdown>
       </div>
 
-      {/* Card wrapper for table */}
       <div className={styles.tableCard}>
         <Table>
           <TableHeader>
@@ -128,15 +146,11 @@ export default function TTResultsPage() {
           </TableHeader>
 
           <TableBody>
-            {filtered.map((t) => (
+            {pageData.map((t) => (
               <TableRow key={t.id}>
-                <TableCell>
-                  <TableCellLayout>{t.id}</TableCellLayout>
-                </TableCell>
+                <TableCell><TableCellLayout>{t.id}</TableCellLayout></TableCell>
                 <TableCell>{t.zone}</TableCell>
-                <TableCell>
-                  <b>{t.serviceNumber}</b>
-                </TableCell>
+                <TableCell><b>{t.serviceNumber}</b></TableCell>
                 <TableCell>{t.handler}</TableCell>
                 <TableCell>{getStatusBadge(t.status)}</TableCell>
                 <TableCell>{t.duration}</TableCell>
@@ -146,9 +160,30 @@ export default function TTResultsPage() {
         </Table>
       </div>
 
-      <CardFooter style={{ marginTop: "15px", opacity: 0.6 }}>
-        Showing {filtered.length} of {dummyTickets.length} results
-      </CardFooter>
+      {/* PAGINATION */}
+      <div className={styles.pagination}>
+        <Button disabled={currentPage === 1} onClick={() => goToPage(currentPage - 1)}>
+          Previous
+        </Button>
+
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          <Button
+            key={page}
+            appearance={page === currentPage ? "primary" : "secondary"}
+            onClick={() => goToPage(page)}
+          >
+            {page}
+          </Button>
+        ))}
+
+        <Button disabled={currentPage === totalPages} onClick={() => goToPage(currentPage + 1)}>
+          Next
+        </Button>
+      </div>
+
+      <div style={{ textAlign: "center", opacity: 0.6, marginTop: "8px" }}>
+        Showing page {currentPage} of {totalPages} — {filtered.length} results
+      </div>
     </div>
   );
 }

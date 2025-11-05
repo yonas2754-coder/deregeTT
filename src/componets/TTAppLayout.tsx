@@ -1,110 +1,122 @@
-// components/TTNavBar.tsx
 'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-
 import {
-    Title1,
-    tokens,
-    makeStyles,
-    shorthands,
+  Text,
+  Button,
+  Input,
+  Subtitle1,
+  makeStyles,
+  tokens,
+  shorthands,
+  mergeClasses,
 } from '@fluentui/react-components';
+import { Home24Regular, ClipboardTaskListLtr24Regular, Search24Regular } from '@fluentui/react-icons';
 
-// --- STYLING: Professional, Sticky, and Fluent Brand ---
 const useStyles = makeStyles({
-    header: {
-        // ESSENTIAL: Sticky Header for an application shell look
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        height: '60px',
+  container: {
+    position: 'sticky',
+    top: 0,
+    zIndex: 100,
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: tokens.colorNeutralBackground1,
+    boxShadow: tokens.shadow16,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+  },
 
-        backgroundColor: tokens.colorBrandBackground,
-        color: tokens.colorNeutralForegroundInverted,
-        boxShadow: tokens.shadow8, // Subtle shadow for elevation
-        
-        // Responsive Padding
-        ...shorthands.padding('0', tokens.spacingHorizontalXXL),
-    },
-    appName: {
-        color: tokens.colorNeutralForegroundInverted,
-        fontWeight: tokens.fontWeightSemibold,
-        textDecorationLine: 'none', 
-    },
-    navButtons: {
-        display: 'flex',
-        ...shorthands.gap(tokens.spacingHorizontalM),
-    },
-    // Base style for the Link component
-    navLink: {
-        display: 'flex',
-        alignItems: 'center',
-        height: '40px',
-        paddingLeft: tokens.spacingHorizontalM,
-        paddingRight: tokens.spacingHorizontalM,
-        textDecorationLine: 'none',
-        borderRadius: tokens.borderRadiusMedium,
-        color: tokens.colorNeutralForegroundInverted,
-        backgroundColor: 'transparent',
-        transitionProperty: 'background-color, border-bottom',
-        transitionDuration: tokens.durationNormal,
+  topBar: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalXXL),
+  },
 
-        // Hover State
-        ':hover': {
-            backgroundColor: tokens.colorBrandBackgroundHover,
-            color: tokens.colorNeutralForegroundInverted,
-        },
+  appTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalM,
+    fontWeight: tokens.fontWeightSemibold,
+    color: tokens.colorNeutralForeground1,
+    fontSize: '18px',
+  },
+
+  navArea: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+    ...shorthands.padding(tokens.spacingVerticalXS, tokens.spacingHorizontalXXL),
+    backgroundColor: tokens.colorNeutralBackground2,
+  },
+
+  navButton: {
+    fontWeight: tokens.fontWeightSemibold,
+    borderRadius: tokens.borderRadiusMedium,
+    transition: 'all 0.18s ease',
+  },
+
+  active: {
+    backgroundColor: tokens.colorBrandBackground,
+    color: tokens.colorNeutralForegroundInverted,
+    ':hover': {
+      backgroundColor: tokens.colorBrandBackgroundHover,
     },
-    // Styling for the currently active link (tab)
-    navLinkActive: {
-        backgroundColor: tokens.colorBrandBackgroundSelected,
-        // Visual indicator: Thick underline on selection
-        ...shorthands.borderBottom('3px', 'solid', tokens.colorNeutralBackground1),
-    },
+  },
+
+  searchBox: {
+    width: '280px',
+  },
 });
 
-const TTNavBar: React.FC = () => {
-    const styles = useStyles();
-    // 1. Get the current URL path using the Next.js hook
-    const currentPath = usePathname();
+export default function TTNavBar() {
+  const styles = useStyles();
+  const pathname = usePathname();
+  const [query, setQuery] = React.useState('');
 
-    // 2. Helper function to check activity
-    const isLinkActive = (path: string): string => {
-        // Checks if path matches exactly (e.g., '/' or '/TTResultsTable')
-        return currentPath === path ? styles.navLinkActive : '';
-    };
+  const navItems = [
+    { title: 'New Ticket', href: '/', icon: <Home24Regular /> },
+    { title: 'Ticket Results', href: '/TTResultsTable', icon: <ClipboardTaskListLtr24Regular /> },
+  ];
 
-    return (
-        <header className={styles.header}>
-            <Title1 className={styles.appName}>
-                Ethio Telecom TT Portal
-            </Title1>
-            
-            <nav className={styles.navButtons}>
-                
-                {/* 1. Create New Ticket Link (Home Page) */}
-                <Link 
-                    href="/" 
-                    className={`${styles.navLink} ${isLinkActive('/')}`}
-                > 
-                    Create New Ticket
-                </Link> 
-                
-                {/* 2. View All Tickets Link */}
-                <Link 
-                    href="/TTResultsTable" 
-                    className={`${styles.navLink} ${isLinkActive('/TTResultsTable')}`}
-                > 
-                    View All Tickets
-                </Link> 
-            </nav>
-        </header>
-    );
-};
+  return (
+    <header className={styles.container}>
+      {/* Top Brand Bar */}
+      <div className={styles.topBar}>
+        <div className={styles.appTitle}>
+          📡 Ethio Telecom TT Portal
+        </div>
 
-export default TTNavBar;
+        {/* Microsoft-style search box */}
+        <Input
+          placeholder="Search tickets..."
+          contentBefore={<Search24Regular />}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className={styles.searchBox}
+        />
+      </div>
+
+      {/* Navigation Buttons */}
+      <nav className={styles.navArea}>
+        {navItems.map((item) => (
+          <Link key={item.href} href={item.href} style={{ textDecoration: 'none' }}>
+            <Button
+              appearance={pathname === item.href ? 'primary' : 'subtle'}
+              icon={item.icon}
+              className={mergeClasses(
+                styles.navButton,
+                pathname === item.href && styles.active
+              )}
+            >
+              {item.title}
+            </Button>
+          </Link>
+        ))}
+      </nav>
+    </header>
+  );
+}
