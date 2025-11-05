@@ -1,186 +1,154 @@
-// components/TTResultsTable.tsx
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 import {
-    Table,
-    TableHeader,
-    TableHeaderCell,
-    TableBody,
-    TableRow,
-    TableCell,
-    TableCellLayout,
-    TableSelectionCell,
-    Title2,
-    Label,
-    tokens,
-    makeStyles,
-    shorthands,
-    Badge,
-} from '@fluentui/react-components';
+  Table,
+  TableHeader,
+  TableHeaderCell,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableCellLayout,
+  Input,
+  Dropdown,
+  Option,
+  Label,
+  makeStyles,
+  tokens,
+  shorthands,
+  Badge,
+  SearchBox,
+  Title3,
+  Card,
+  CardHeader,
+  CardFooter,
+  CardPreview,
+} from "@fluentui/react-components";
 
-// --- DATA STRUCTURE ---
-interface ITicketResult {
-    id: number;
-    date: string;
-    serviceNumber: string;
-    tasksClassification: string;
-    requestType: string;
-    zone: string;
-    handler: string;
-    priority: 'High' | 'Medium' | 'Low';
-    remarks: string;
-    status: 'New' | 'In Progress' | 'Solved' | 'Pending';
+interface ITicket {
+  id: string;
+  zone: string;
+  serviceNumber: string;
+  handler: string;
+  status: "Resolved" | "Pending" | "In-Progress";
+  duration: string;
 }
 
-// --- DUMMY ENTERPRISE DATA (Based on form fields) ---
-const dummyTickets: ITicketResult[] = [
-    { id: 1, date: '2025-11-04', serviceNumber: '251118991234', tasksClassification: 'Provisioning', requestType: 'Email', zone: 'CAAZ', handler: 'Alegntaye', priority: 'High', remarks: 'New E1 configuration for site X.', status: 'In Progress' },
-    { id: 2, date: '2025-11-04', serviceNumber: '251911556789', tasksClassification: 'Maintenance', requestType: 'Phone', zone: 'EAAZ', handler: 'Yehualaeshet', priority: 'Medium', remarks: 'Caller ID display issue for customer Y.', status: 'Pending' },
-    { id: 3, date: '2025-11-03', serviceNumber: '251582001010', tasksClassification: 'Others', requestType: 'SMS order', zone: 'NAAZ', handler: 'semanu', priority: 'Low', remarks: 'Data collection request for monthly report.', status: 'Solved' },
-    { id: 4, date: '2025-11-03', serviceNumber: '251913141516', tasksClassification: 'Provisioning', requestType: 'Manual order', zone: 'SWAAZ', handler: 'Ermias', priority: 'High', remarks: 'IMS SIP service activation for branch Z.', status: 'New' },
-    { id: 5, date: '2025-11-02', serviceNumber: '251114445555', tasksClassification: 'Maintenance', requestType: 'Email', zone: 'CAAZ', handler: 'Abdulhafiz', priority: 'Medium', remarks: 'Routing correction for internal O&M calls.', status: 'Solved' },
+const dummyTickets: ITicket[] = [
+  { id: "1", zone: "Addis Ababa", serviceNumber: "SR-2023-001", handler: "Yonas", status: "Resolved", duration: "03:12" },
+  { id: "2", zone: "Adama", serviceNumber: "SR-2023-002", handler: "Daniel", status: "Pending", duration: "05:41" },
+  { id: "3", zone: "Addis Ababa", serviceNumber: "SR-2023-003", handler: "Betelhem", status: "In-Progress", duration: "01:55" },
+  { id: "4", zone: "Hawassa", serviceNumber: "SR-2023-004", handler: "Mekdes", status: "Resolved", duration: "02:10" },
 ];
 
-// --- COLUMN DEFINITIONS ---
-const columns = [
-    { columnKey: 'selection', label: '' },
-    { columnKey: 'id', label: 'Ticket ID' },
-    { columnKey: 'date', label: 'Date' },
-    { columnKey: 'serviceNumber', label: 'Service No.' },
-    { columnKey: 'tasksClassification', label: 'Classification' },
-    { columnKey: 'requestType', label: 'Source' },
-    { columnKey: 'zone', label: 'Zone' },
-    { columnKey: 'handler', label: 'Handler' },
-    { columnKey: 'priority', label: 'Priority' },
-    { columnKey: 'status', label: 'Status' },
-    // Remarks column should be visible only in the detail view or larger screens
-];
-
-
-// --- STYLING (Professional & Responsive) ---
 const useStyles = makeStyles({
-    container: {
-        ...shorthands.padding(tokens.spacingVerticalXXL, tokens.spacingHorizontalXXL, tokens.spacingVerticalM, tokens.spacingHorizontalXXL),
-        maxWidth: '1200px', 
-        margin: '0 auto',
-        display: 'flex',
-        flexDirection: 'column',
-        ...shorthands.gap('28px'),
-        // Mobile padding
-        '@media (max-width: 768px)': {
-            ...shorthands.padding(tokens.spacingVerticalXL, tokens.spacingHorizontalL, tokens.spacingVerticalM, tokens.spacingHorizontalL),
-        },
-    },
-    title: {
-        borderBottom: `2px solid ${tokens.colorBrandBackground}`, 
-        paddingBottom: '8px', 
-        marginBottom: '4px',
-        fontWeight: tokens.fontWeightSemibold,
-        fontSize: tokens.fontSizeHero700, 
-    },
-    tableWrapper: {
-        // ESSENTIAL FOR ENTERPRISE TABLE RESPONSIVENESS: Horizontal scroll on small screens
-        overflowX: 'auto',
-        // Optional: Add a light border/shadow to separate the table visually
-        boxShadow: tokens.shadow2,
-        ...shorthands.borderRadius(tokens.borderRadiusMedium),
-    },
-    // Styles for the Priority Badge colors (Ethio Telecom Theme Colors)
-    priorityHigh: {
-        backgroundColor: tokens.colorPaletteRedBackground3,
-        color: tokens.colorPaletteRedForeground3,
-    },
-    priorityMedium: {
-        backgroundColor: tokens.colorPaletteYellowBackground3,
-        color: tokens.colorPaletteYellowForeground3,
-    },
-    priorityLow: {
-        backgroundColor: tokens.colorPaletteGreenBackground3, // Using green for low priority
-        color: tokens.colorPaletteGreenForeground3,
-    },
+  pageWrapper: {
+    padding: "32px",
+    backgroundColor: tokens.colorNeutralBackground2,
+    minHeight: "100vh",
+  },
+  filterBar: {
+    display: "flex",
+    gap: "12px",
+    marginBottom: "20px",
+    alignItems: "center",
+  },
+  tableCard: {
+    ...shorthands.padding("20px"),
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderRadius: tokens.borderRadiusLarge,
+    boxShadow: tokens.shadow4,
+  },
 });
 
-// Helper function to map priority to Fluent UI Badge styling
-const getPriorityStyles = (priority: ITicketResult['priority'], styles: Record<string, string>) => {
-    if (priority === 'High') return styles.priorityHigh;
-    if (priority === 'Medium') return styles.priorityMedium;
-    return styles.priorityLow;
-};
+export default function TTResultsPage() {
+  const styles = useStyles();
 
-const TTResultsTable: React.FC = () => {
-    const styles = useStyles();
-    const [selectedRows, setSelectedRows] = React.useState<Record<number, boolean>>({});
+  const [searchText, setSearchText] = React.useState("");
+  const [filterZone, setFilterZone] = React.useState("All");
 
-    const handleRowToggle = (id: number) => {
-        setSelectedRows(prev => ({
-            ...prev,
-            [id]: !prev[id]
-        }));
-    };
+  const zones = ["All", "Addis Ababa", "Adama", "Hawassa"];
 
-    return (
-        <div className={styles.container}>
-            <Title2 className={styles.title}>
-                Trouble Ticket Results & Status
-            </Title2>
-            <Label size="large" weight="semibold">
-                Overview of recently submitted or active service tickets.
-            </Label>
-
-            <div className={styles.tableWrapper}>
-                <Table size="small" aria-label="Trouble Ticket Results">
-                    <TableHeader>
-                        <TableRow>
-                            <TableSelectionCell 
-                                checked={false} // Placeholder for select all
-                            />
-                            {columns.filter(c => c.columnKey !== 'selection').map((column) => (
-                                <TableHeaderCell key={column.columnKey}>
-                                    {/* Placeholder for Sorting Icon */}
-                                    <TableCellLayout>{column.label}</TableCellLayout>
-                                </TableHeaderCell>
-                            ))}
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {dummyTickets.map((item) => (
-                            <TableRow key={item.id}>
-                                <TableSelectionCell 
-                                        id={item.id}
-                                        checked={selectedRows[item.id] || false}
-                                        onClick={() => handleRowToggle(item.id)}
-                                    />
-                                    <TableCell>{item.id}</TableCell>
-                                <TableCell>{item.serviceNumber}</TableCell>
-                                <TableCell>{item.tasksClassification}</TableCell>
-                                <TableCell>{item.requestType}</TableCell>
-                                <TableCell>{item.zone}</TableCell>
-                                <TableCell>{item.handler}</TableCell>
-
-                                {/* Priority Cell with Colored Badge */}
-                                <TableCell>
-                                    <Badge
-                                        appearance="filled"
-                                        size="medium"
-                                        className={getPriorityStyles(item.priority, styles)}
-                                    >
-                                        {item.priority}
-                                    </Badge>
-                                </TableCell>
-                                
-                                {/* Status Cell (Simple Text for clean look) */}
-                                <TableCell>{item.status}</TableCell>
-                                
-                                {/* A practical enterprise table would also have a Details/Action button here */}
-                                {/* <TableCell><Button size="small" appearance="subtle">View Details</Button></TableCell> */}
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </div>
-        </div>
+  // FILTER
+  const filtered = dummyTickets
+    .filter((t) => (filterZone !== "All" ? t.zone === filterZone : true))
+    .filter(
+      (t) =>
+        t.serviceNumber.toLowerCase().includes(searchText.toLowerCase()) ||
+        t.handler.toLowerCase().includes(searchText.toLowerCase())
     );
-};
 
-export default TTResultsTable;
+  const getStatusBadge = (status: ITicket["status"]) => {
+    const styles: any = {
+      Resolved: { appearance: "filled" },
+      Pending: { appearance: "tint" },
+      "In-Progress": { appearance: "outline" },
+    };
+    return <Badge {...styles[status]}>{status}</Badge>;
+  };
+
+  return (
+    <div className={styles.pageWrapper}>
+      <Title3>Service Ticket Results</Title3>
+      <p style={{ opacity: 0.7, marginBottom: "20px" }}>
+        Real-time operational insight & service completion details
+      </p>
+
+      {/* Filters */}
+      <div className={styles.filterBar}>
+        <SearchBox
+          placeholder="Search by ticket or handler..."
+          onChange={(_, data) => setSearchText(data.value)}
+          style={{ width: "240px" }}
+        />
+
+        <Dropdown
+          value={filterZone}
+          onOptionSelect={(_, data) => setFilterZone(data.optionText!)}
+          style={{ width: "180px" }}
+        >
+          {zones.map((z) => (
+            <Option key={z}>{z}</Option>
+          ))}
+        </Dropdown>
+      </div>
+
+      {/* Card wrapper for table */}
+      <div className={styles.tableCard}>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHeaderCell>ID</TableHeaderCell>
+              <TableHeaderCell>Zone</TableHeaderCell>
+              <TableHeaderCell>Service Number</TableHeaderCell>
+              <TableHeaderCell>Handler</TableHeaderCell>
+              <TableHeaderCell>Status</TableHeaderCell>
+              <TableHeaderCell>Duration</TableHeaderCell>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            {filtered.map((t) => (
+              <TableRow key={t.id}>
+                <TableCell>
+                  <TableCellLayout>{t.id}</TableCellLayout>
+                </TableCell>
+                <TableCell>{t.zone}</TableCell>
+                <TableCell>
+                  <b>{t.serviceNumber}</b>
+                </TableCell>
+                <TableCell>{t.handler}</TableCell>
+                <TableCell>{getStatusBadge(t.status)}</TableCell>
+                <TableCell>{t.duration}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <CardFooter style={{ marginTop: "15px", opacity: 0.6 }}>
+        Showing {filtered.length} of {dummyTickets.length} results
+      </CardFooter>
+    </div>
+  );
+}
