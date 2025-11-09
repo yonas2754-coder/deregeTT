@@ -5,7 +5,7 @@ import * as React from "react";
 import { 
     Card, CardHeader, CardPreview, Title3, 
     makeStyles, shorthands, tokens,
-    // Fluent UI Imports for Dropdown
+    // 🟢 Fluent UI Imports for Dropdown
     Popover, PopoverTrigger, PopoverSurface, Button,
     useId,
 } from "@fluentui/react-components";
@@ -16,14 +16,13 @@ import {
     PointElement, LineElement 
 } from 'chart.js';
 
-// Imports for Date Range Picker
+// 🟢 Imports for Date Range Picker
 import { DateRangePicker, Range } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import { format } from "date-fns";
-import { CalendarMonthRegular } from "@fluentui/react-icons"; 
+import { CalendarMonthRegular } from "@fluentui/react-icons"; // Added icon for button
 
-// 🚨 ASSUMED: These data functions now accept startDate and endDate
 import { 
     getHandlerPerformanceData, 
     getTaskDistributionData, 
@@ -41,7 +40,7 @@ ChartJS.register(
 );
 
 // =======================================================
-// 2. Styles (No change)
+// 2. Styles
 // =======================================================
 const useStyles = makeStyles({
     chartGrid: {
@@ -86,20 +85,14 @@ const useStyles = makeStyles({
         fontWeight: 500,
     },
     popoverSurface: {
+        // Simple styling to prevent the calendar from being too wide if necessary
         maxWidth: 'fit-content',
     },
 });
 
 // =======================================================
-// 3. Individual Chart Components (Updated to accept date props)
+// 3. Individual Chart Components (No change)
 // =======================================================
-
-// Define a common type for chart props
-type ChartProps = {
-    startDate: Date;
-    endDate: Date;
-};
-
 const ChartWrapper: React.FC<React.PropsWithChildren<{ isDoughnut?: boolean }>> = ({ children, isDoughnut = false }) => {
     const styles = useStyles();
     return (
@@ -112,24 +105,21 @@ const ChartWrapper: React.FC<React.PropsWithChildren<{ isDoughnut?: boolean }>> 
 };
 
 // Chart 1: Handler Performance
-// 💡 UPDATED: Pass date range to the data function
-const HandlerPerformanceChart: React.FC<ChartProps> = ({ startDate, endDate }) => {
+const HandlerPerformanceChart: React.FC = () => {
     const styles = useStyles();
-    const data = React.useMemo(() => getHandlerPerformanceData(startDate, endDate), [startDate, endDate]);
-
     return (
         <Card className={styles.chartCard}>
             <CardHeader header={<Title3>Handler Performance: Total Tasks</Title3>} />
             <ChartWrapper>
                 <Bar 
-                    data={data}
+                    data={getHandlerPerformanceData()}
                     options={{
                         indexAxis: 'y',
                         responsive: true,
                         maintainAspectRatio: false, 
                         plugins: { 
                             legend: { display: false }, 
-                            title: { display: true, text: `Tasks Handled (${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d')})`, font: { size: 14 } } 
+                            title: { display: true, text: 'Tasks Handled by Individual Handler', font: { size: 14 } } 
                         },
                         scales: { 
                             x: { grid: { display: true }, title: { display: true, text: 'Task Count' } }, 
@@ -143,23 +133,20 @@ const HandlerPerformanceChart: React.FC<ChartProps> = ({ startDate, endDate }) =
 };
 
 // Chart 2: Task Distribution
-// 💡 UPDATED: Pass date range to the data function
-const TaskDistributionChart: React.FC<ChartProps> = ({ startDate, endDate }) => {
+const TaskDistributionChart: React.FC = () => {
     const styles = useStyles();
-    const data = React.useMemo(() => getTaskDistributionData(startDate, endDate), [startDate, endDate]);
-
     return (
         <Card className={styles.chartCard}>
             <CardHeader header={<Title3>Task Classification Distribution</Title3>} />
             <ChartWrapper isDoughnut>
                 <Doughnut 
-                    data={data}
+                    data={getTaskDistributionData()}
                     options={{
                         responsive: true,
                         maintainAspectRatio: false, 
                         plugins: { 
                             legend: { position: 'bottom' as const }, 
-                            title: { display: true, text: `Volume Breakdown (${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d')})`, font: { size: 14 } } 
+                            title: { display: true, text: 'Volume Breakdown (Total Tasks)', font: { size: 14 } } 
                         }
                     }}
                 />
@@ -169,22 +156,19 @@ const TaskDistributionChart: React.FC<ChartProps> = ({ startDate, endDate }) => 
 };
 
 // Chart 3: Zonal Task Volume
-// 💡 UPDATED: Pass date range to the data function
-const ZonalTaskVolumeChart: React.FC<ChartProps> = ({ startDate, endDate }) => {
+const ZonalTaskVolumeChart: React.FC = () => {
     const styles = useStyles();
-    const data = React.useMemo(() => getZonalTaskData(startDate, endDate), [startDate, endDate]);
-
     return (
         <Card className={styles.chartCard}>
             <CardHeader header={<Title3>Task Volume by Zone/Region</Title3>} />
             <ChartWrapper>
                 <Bar
-                    data={data}
+                    data={getZonalTaskData()}
                     options={{
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: { 
-                            title: { display: true, text: `Stacked Volume (${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d')})`, font: { size: 14 } }, 
+                            title: { display: true, text: 'Stacked Volume by Zone/Region', font: { size: 14 } }, 
                             tooltip: { mode: 'index', intersect: false } 
                         },
                         scales: { 
@@ -198,24 +182,21 @@ const ZonalTaskVolumeChart: React.FC<ChartProps> = ({ startDate, endDate }) => {
     );
 };
 
-// Chart 4: Historical Task Volume (typically less reliant on range, but included for completeness)
-// 💡 UPDATED: Pass date range to the data function
-const HistoryLineChart: React.FC<ChartProps> = ({ startDate, endDate }) => {
+// Chart 4: Historical Task Volume
+const HistoryLineChart: React.FC = () => {
     const styles = useStyles();
-    const data = React.useMemo(() => getTaskHistoryData(startDate, endDate), [startDate, endDate]);
-
     return (
         <Card className={styles.chartCard}>
             <CardHeader header={<Title3>Historical Daily Task Volume</Title3>} />
             <ChartWrapper>
                 <Line
-                    data={data}
+                    data={getTaskHistoryData()}
                     options={{
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
                             legend: { display: false },
-                            title: { display: true, text: `Task Volume over Time (${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d')})`, font: { size: 14 } },
+                            title: { display: true, text: 'Task Volume over Time (Last 7 Days)', font: { size: 14 } },
                         },
                         scales: {
                             x: { grid: { display: false }, title: { display: true, text: 'Date' } },
@@ -233,7 +214,7 @@ const HistoryLineChart: React.FC<ChartProps> = ({ startDate, endDate }) => {
 };
 
 // =======================================================
-// 4. Main Export Component (Updated to pass state)
+// 4. Main Export Component
 // =======================================================
 export const DashboardCharts: React.FC = () => {
     const styles = useStyles();
@@ -242,25 +223,24 @@ export const DashboardCharts: React.FC = () => {
     // State for date range
     const [range, setRange] = React.useState<Range[]>([
         {
-            startDate: new Date(new Date().setDate(new Date().getDate() - 7)), 
+            startDate: new Date(new Date().setDate(new Date().getDate() - 7)), // Default to last 7 days
             endDate: new Date(),
             key: "selection",
         },
     ]);
     
-    // Extract start and end dates for easy passing to charts
-    const { startDate, endDate } = range[0];
-
     // State for popover visibility
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
 
-    // Corrected Handler
+    // 🟢 Corrected Handler (Resolves TypeScript error)
     const handleRangeChange = (ranges: { [key: string]: Range }) => {
+        // Access the updated range using its key, 'selection'
         setRange([ranges.selection]); 
-        // setIsPopoverOpen(false); // Uncomment to close popover on selection
+        // We can close the popover after selection if desired, or let it close on outside click.
+        // To close immediately after picking the end date, you'd add more logic here.
     };
 
-    const formattedDateRange = `${format(startDate as Date, "MMM dd, yyyy")} - ${format(endDate as Date, "MMM dd, yyyy")}`;
+    const formattedDateRange = `${format(range[0].startDate as Date, "MMM dd, yyyy")} - ${format(range[0].endDate as Date, "MMM dd, yyyy")}`;
 
     return (
         <div>
@@ -269,10 +249,11 @@ export const DashboardCharts: React.FC = () => {
                 <Popover 
                     open={isPopoverOpen} 
                     onOpenChange={(e, data) => setIsPopoverOpen(data.open)} 
-                    trapFocus={true} 
-                    positioning="below" // CORRECTED prop name
+                    trapFocus={true} // Keep focus inside the popover while open
+                    positioning='below'
                 >
                     <PopoverTrigger disableButtonEnhancement>
+                        {/* Button acts as the dropdown trigger */}
                         <Button 
                             id={buttonId}
                             className={styles.dateButton} 
@@ -283,12 +264,13 @@ export const DashboardCharts: React.FC = () => {
                         </Button>
                     </PopoverTrigger>
                     <PopoverSurface className={styles.popoverSurface}>
+                        {/* The Date Range Picker content */}
                         <DateRangePicker
                             ranges={range}
                             onChange={handleRangeChange}
                             moveRangeOnFirstSelection={false}
                             showSelectionPreview={true}
-                            months={2}
+                            months={2} // Show two months in the calendar
                             direction="horizontal"
                         />
                     </PopoverSurface>
@@ -297,12 +279,12 @@ export const DashboardCharts: React.FC = () => {
 
             ---
 
-            {/* 📊 Charts Grid - Dates are passed here */}
+            {/* 📊 Charts Grid */}
             <div className={styles.chartGrid}>
-                <HistoryLineChart startDate={startDate as Date} endDate={endDate as Date} />
-                <HandlerPerformanceChart startDate={startDate as Date} endDate={endDate as Date} />
-                <TaskDistributionChart startDate={startDate as Date} endDate={endDate as Date} />
-                <ZonalTaskVolumeChart startDate={startDate as Date} endDate={endDate as Date} />
+                <HistoryLineChart />
+                <HandlerPerformanceChart />
+                <TaskDistributionChart />
+                <ZonalTaskVolumeChart />
             </div>
         </div>
     );
