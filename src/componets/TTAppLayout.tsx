@@ -9,6 +9,11 @@ import {
   tokens,
   shorthands,
   mergeClasses,
+  Drawer,
+  DrawerHeader,
+  DrawerHeaderTitle,
+  DrawerBody,
+  DrawerFooter,
 } from '@fluentui/react-components';
 import {
   Home24Regular,
@@ -23,76 +28,57 @@ import {
 // =======================
 
 const useStyles = makeStyles({
-  container: {
+  headerContainer: {
     position: 'sticky',
     top: 0,
-    zIndex: 100,
+    zIndex: 200,
     width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    backgroundColor: tokens.colorNeutralBackground1,
+    backgroundColor: '#A5D166', // ✅ Brand background
     boxShadow: tokens.shadow16,
     borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
   },
 
   topBar: {
     display: 'flex',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalXXL),
-
     '@media (max-width: 768px)': {
       ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalM),
     },
   },
 
-  appTitle: {
+  logoArea: {
+    display: 'flex',
+    alignItems: 'center',
+    fontWeight: tokens.fontWeightSemibold,
+    fontSize: '18px',
+    color: tokens.colorNeutralForeground1Static, // readable on green
+    gap: tokens.spacingHorizontalM,
+    '& img': {
+      height: '34px',
+      width: 'auto',
+      objectFit: 'contain',
+    },
+  },
+
+  navLinks: {
     display: 'flex',
     alignItems: 'center',
     gap: tokens.spacingHorizontalM,
-    fontWeight: tokens.fontWeightSemibold,
-    color: tokens.colorNeutralForeground1,
-    fontSize: '18px',
-    '& img': {
-      height: '32px',
-      objectFit: 'contain',
-      marginRight: tokens.spacingHorizontalS,
-    },
-  },
-
-  // ✅ Base nav area (hidden on mobile by default)
-  navArea: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: tokens.spacingHorizontalS,
-    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
-    ...shorthands.padding(tokens.spacingVerticalXS, tokens.spacingHorizontalXXL),
-    backgroundColor: tokens.colorNeutralBackground2,
-
     '@media (max-width: 768px)': {
-      flexDirection: 'column',
-      alignItems: 'flex-start',
-      ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalM),
-      display: 'none', // Hidden by default
-      width: '100%',
-      transition: 'max-height 0.3s ease-in-out, opacity 0.3s ease',
-      overflow: 'hidden',
-    },
-  },
-
-  // ✅ When mobile menu open
-  navAreaOpen: {
-    '@media (max-width: 768px)': {
-      display: 'flex',
-      backgroundColor: tokens.colorNeutralBackground2,
+      display: 'none',
     },
   },
 
   navButton: {
     fontWeight: tokens.fontWeightSemibold,
+    transition: 'all 0.2s ease',
     borderRadius: tokens.borderRadiusMedium,
-    transition: 'all 0.18s ease',
-    width: 'fit-content',
+    color: tokens.colorNeutralForeground1Static,
+    ':hover': {
+      backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    },
   },
 
   active: {
@@ -103,11 +89,34 @@ const useStyles = makeStyles({
     },
   },
 
-  hamburgerBtn: {
+  hamburger: {
     display: 'none',
     '@media (max-width: 768px)': {
       display: 'flex',
-      backgroundColor: tokens.colorNeutralBackground3,
+      color: tokens.colorNeutralForeground1Static,
+    },
+  },
+
+  drawerLink: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalM,
+    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalL}`,
+    borderRadius: tokens.borderRadiusMedium,
+    color: tokens.colorNeutralForeground1,
+    textDecoration: 'none',
+    fontWeight: tokens.fontWeightSemibold,
+    transition: 'background-color 0.2s ease',
+    ':hover': {
+      backgroundColor: tokens.colorNeutralBackground3Hover,
+    },
+  },
+
+  drawerActive: {
+    backgroundColor: tokens.colorBrandBackground,
+    color: tokens.colorNeutralForegroundInverted,
+    ':hover': {
+      backgroundColor: tokens.colorBrandBackgroundHover,
     },
   },
 });
@@ -119,7 +128,7 @@ const useStyles = makeStyles({
 export default function TTNavBar() {
   const styles = useStyles();
   const pathname = usePathname();
-  const [menuOpen, setMenuOpen] = React.useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
 
   const navItems = [
     { title: 'New Ticket', href: '/', icon: <Home24Regular /> },
@@ -127,57 +136,92 @@ export default function TTNavBar() {
     { title: 'Task Charts', href: '/TTchart', icon: <ChartMultipleRegular /> },
   ];
 
-  // Close menu when screen resizes above mobile
-  React.useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 768 && menuOpen) setMenuOpen(false);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [menuOpen]);
+  const closeDrawer = () => setIsDrawerOpen(false);
 
   return (
-    <header className={styles.container}>
-      {/* 🔹 Top Bar */}
-      <div className={styles.topBar}>
-        <div className={styles.appTitle}>
-          <img src="/photoDagm3.png" alt="Ethio Telecom Logo" />
-          📡 Ethio Telecom TT Portal
+    <>
+      <header className={styles.headerContainer}>
+        {/* 🔹 Top Navigation Bar */}
+        <div className={styles.topBar}>
+          <div className={styles.logoArea}>
+            <img src="/photoDagm3.png" alt="Ethio Telecom Logo" />
+            📡 Ethio Telecom TT Portal
+          </div>
+
+          {/* 🔹 Desktop Navigation */}
+          <nav className={styles.navLinks}>
+            {navItems.map((item) => (
+              <Link key={item.href} href={item.href} style={{ textDecoration: 'none' }}>
+                <Button
+                  appearance="transparent"
+                  icon={item.icon}
+                  className={mergeClasses(
+                    styles.navButton,
+                    pathname === item.href && styles.active
+                  )}
+                >
+                  {item.title}
+                </Button>
+              </Link>
+            ))}
+          </nav>
+
+          {/* 🔹 Mobile Hamburger Button */}
+          <Button
+            appearance="transparent"
+            icon={<Navigation24Regular />}
+            className={styles.hamburger}
+            onClick={() => setIsDrawerOpen(true)}
+            aria-label="Open navigation menu"
+          />
         </div>
+      </header>
 
-        {/* 🔹 Hamburger Button (Visible on Mobile) */}
-        <Button
-          appearance="subtle"
-          icon={menuOpen ? <Dismiss24Regular /> : <Navigation24Regular />}
-          className={styles.hamburgerBtn}
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle navigation menu"
-        />
-      </div>
-
-      {/* 🔹 Navigation Area */}
-      <nav
-        className={mergeClasses(
-          styles.navArea,
-          menuOpen && styles.navAreaOpen
-        )}
+      {/* 🔹 Drawer for Mobile Menu */}
+      <Drawer
+        open={isDrawerOpen}
+        onOpenChange={(_, data) => setIsDrawerOpen(data.open)}
+        position="end"
+        size="small"
       >
-        {navItems.map((item) => (
-          <Link key={item.href} href={item.href} style={{ textDecoration: 'none', width: '100%' }}>
-            <Button
-              appearance={pathname === item.href ? 'primary' : 'subtle'}
-              icon={item.icon}
+        <DrawerHeader>
+          <DrawerHeaderTitle
+            action={
+              <Button
+                appearance="subtle"
+                icon={<Dismiss24Regular />}
+                onClick={closeDrawer}
+                aria-label="Close menu"
+              />
+            }
+          >
+            📡 Ethio Telecom TT Portal
+          </DrawerHeaderTitle>
+        </DrawerHeader>
+
+        <DrawerBody>
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
               className={mergeClasses(
-                styles.navButton,
-                pathname === item.href && styles.active
+                styles.drawerLink,
+                pathname === item.href && styles.drawerActive
               )}
-              onClick={() => setMenuOpen(false)} // close after click
+              onClick={closeDrawer}
             >
+              {item.icon}
               {item.title}
-            </Button>
-          </Link>
-        ))}
-      </nav>
-    </header>
+            </Link>
+          ))}
+        </DrawerBody>
+
+        <DrawerFooter>
+          <Button appearance="secondary" onClick={closeDrawer} style={{ width: '100%' }}>
+            Close Menu
+          </Button>
+        </DrawerFooter>
+      </Drawer>
+    </>
   );
 }
