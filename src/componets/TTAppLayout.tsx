@@ -15,6 +15,13 @@ import {
   DrawerBody,
   DrawerFooter,
   Text,
+  Menu,
+  MenuTrigger,
+  MenuPopover,
+  MenuList,
+  MenuItem,
+  Avatar,
+  Tooltip,
 } from '@fluentui/react-components';
 import {
   Home24Regular,
@@ -22,11 +29,14 @@ import {
   ChartMultipleRegular,
   Navigation24Regular,
   Dismiss24Regular,
+  Person24Regular,
+  Settings24Regular,
+  SignOut24Regular,
 } from '@fluentui/react-icons';
 
-// ========================================
-// 🔹 Styles (SharePoint-like, modern look)
-// ========================================
+// =======================
+// 🔹 Styles
+// =======================
 const useStyles = makeStyles({
   headerContainer: {
     position: 'sticky',
@@ -37,7 +47,6 @@ const useStyles = makeStyles({
     boxShadow: tokens.shadow16,
     borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
   },
-
   topBar: {
     display: 'flex',
     alignItems: 'center',
@@ -47,7 +56,6 @@ const useStyles = makeStyles({
       ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalM),
     },
   },
-
   logoArea: {
     display: 'flex',
     alignItems: 'center',
@@ -61,7 +69,6 @@ const useStyles = makeStyles({
       objectFit: 'contain',
     },
   },
-
   navLinks: {
     display: 'flex',
     alignItems: 'center',
@@ -70,7 +77,6 @@ const useStyles = makeStyles({
       display: 'none',
     },
   },
-
   navButton: {
     fontWeight: tokens.fontWeightSemibold,
     borderRadius: tokens.borderRadiusMedium,
@@ -81,12 +87,10 @@ const useStyles = makeStyles({
       transform: 'translateY(-1px)',
     },
   },
-
   active: {
     backgroundColor: 'rgba(255,255,255,0.3)',
     color: tokens.colorNeutralForeground1Static,
   },
-
   hamburger: {
     display: 'none',
     '@media (max-width: 900px)': {
@@ -95,14 +99,12 @@ const useStyles = makeStyles({
       ':hover': { backgroundColor: 'rgba(255,255,255,0.15)' },
     },
   },
-
   drawerBody: {
     display: 'flex',
     flexDirection: 'column',
     gap: tokens.spacingVerticalM,
     paddingTop: tokens.spacingVerticalM,
   },
-
   drawerLink: {
     display: 'flex',
     alignItems: 'center',
@@ -118,20 +120,44 @@ const useStyles = makeStyles({
       transform: 'translateX(4px)',
     },
   },
-
   drawerActive: {
-    backgroundColor: '#A5D166',
+    backgroundColor: '#9CCB5E',
     color: tokens.colorNeutralForegroundInverted,
     ':hover': {
-      backgroundColor: '#9CCB5E',
+      backgroundColor: '#8FC856',
     },
+  },
+  profileMenu: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+  },
+  drawerProfile: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalL}`,
+  },
+  drawerDivider: {
+    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+    margin: '8px 0',
   },
 });
 
-// ========================================
+// =======================
 // 🔹 Component
-// ========================================
-export default function TTNavBar() {
+// =======================
+interface User {
+  name?: string;
+  email?: string;
+  image?: string;
+}
+
+interface TTNavBarProps {
+  user?: User;
+}
+
+export default function TTNavBar({ user }: TTNavBarProps) {
   const styles = useStyles();
   const pathname = usePathname();
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
@@ -144,15 +170,22 @@ export default function TTNavBar() {
 
   const closeDrawer = () => setIsDrawerOpen(false);
 
+  const getInitials = (name?: string) => {
+    if (!name) return '';
+    const names = name.split(' ');
+    if (names.length === 1) return names[0].charAt(0).toUpperCase();
+    return (names[0].charAt(0) + names[1].charAt(0)).toUpperCase();
+  };
+
   return (
     <>
+      {/* Header */}
       <header className={styles.headerContainer}>
         <div className={styles.topBar}>
+          {/* Logo */}
           <div className={styles.logoArea}>
             <img src="/photoDagm3.png" alt="Ethio Telecom Logo" />
-            <Text weight="semibold" size={400}>
-              📡 Ethio Telecom TT Portal
-            </Text>
+            <Text weight="semibold" size={400}>📡 Ethio Telecom TT Portal</Text>
           </div>
 
           {/* Desktop Navigation */}
@@ -162,10 +195,7 @@ export default function TTNavBar() {
                 <Button
                   appearance="transparent"
                   icon={item.icon}
-                  className={mergeClasses(
-                    styles.navButton,
-                    pathname === item.href && styles.active
-                  )}
+                  className={mergeClasses(styles.navButton, pathname === item.href && styles.active)}
                 >
                   {item.title}
                 </Button>
@@ -173,18 +203,43 @@ export default function TTNavBar() {
             ))}
           </nav>
 
-          {/* Mobile Menu Button */}
-          <Button
-            appearance="transparent"
-            icon={<Navigation24Regular />}
-            className={styles.hamburger}
-            onClick={() => setIsDrawerOpen(true)}
-            aria-label="Open navigation menu"
-          />
+          {/* Right side: Profile + Hamburger */}
+          <div className={styles.profileMenu}>
+            {/* Profile Dropdown (Desktop) */}
+            <Tooltip content={user?.name || 'Guest'} relationship="label">
+              <Menu>
+                <MenuTrigger>
+                  <Button appearance="transparent" shape="circular" aria-label="User menu">
+                    {user?.image ? (
+                      <Avatar image={{ src: user.image }} size={32} />
+                    ) : (
+                      <Avatar name={getInitials(user?.name)} size={32} />
+                    )}
+                  </Button>
+                </MenuTrigger>
+                <MenuPopover>
+                  <MenuList>
+                    <MenuItem icon={<Person24Regular />}>Profile</MenuItem>
+                    <MenuItem icon={<Settings24Regular />}>Settings</MenuItem>
+                    <MenuItem icon={<SignOut24Regular />}>Sign Out</MenuItem>
+                  </MenuList>
+                </MenuPopover>
+              </Menu>
+            </Tooltip>
+
+            {/* Mobile Hamburger */}
+            <Button
+              appearance="transparent"
+              icon={<Navigation24Regular />}
+              className={styles.hamburger}
+              onClick={() => setIsDrawerOpen(true)}
+              aria-label="Open navigation menu"
+            />
+          </div>
         </div>
       </header>
 
-      {/* Drawer Menu for Mobile */}
+      {/* Drawer for Mobile */}
       <Drawer
         open={isDrawerOpen}
         onOpenChange={(_, data) => setIsDrawerOpen(data.open)}
@@ -207,20 +262,46 @@ export default function TTNavBar() {
         </DrawerHeader>
 
         <DrawerBody className={styles.drawerBody}>
+          {/* Profile at top of drawer */}
+          <Tooltip content={user?.name || 'Guest'} relationship="label">
+            <div className={styles.drawerProfile}>
+              {user?.image ? (
+                <Avatar image={{ src: user.image }} size={40} />
+              ) : (
+                <Avatar name={getInitials(user?.name)} size={40} />
+              )}
+              <Text weight="semibold">{user?.name || 'Guest'}</Text>
+            </div>
+          </Tooltip>
+
+          {/* Navigation Links */}
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={mergeClasses(
-                styles.drawerLink,
-                pathname === item.href && styles.drawerActive
-              )}
+              className={mergeClasses(styles.drawerLink, pathname === item.href && styles.drawerActive)}
               onClick={closeDrawer}
             >
               {item.icon}
               {item.title}
             </Link>
           ))}
+
+          <div className={styles.drawerDivider} />
+
+          {/* Profile Links */}
+          <Link href="/profile" className={styles.drawerLink} onClick={closeDrawer}>
+            <Person24Regular />
+            Profile
+          </Link>
+          <Link href="/settings" className={styles.drawerLink} onClick={closeDrawer}>
+            <Settings24Regular />
+            Settings
+          </Link>
+          <Link href="/signout" className={styles.drawerLink} onClick={closeDrawer}>
+            <SignOut24Regular />
+            Sign Out
+          </Link>
         </DrawerBody>
 
         <DrawerFooter>
