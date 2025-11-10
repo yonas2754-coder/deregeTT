@@ -68,7 +68,7 @@ const useStyles = makeStyles({
         alignItems: "center",
     },
     dashboardCard: {
-        ...shorthands.padding(tokens.spacingHorizontalXXL, tokens.spacingVerticalXXL),
+        ...shorthands.padding(0, 0),
         boxShadow: tokens.shadow16,
     },
     // Professional Typography: Neutral gray for secondary text

@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-// 🚀 FIX: Ensure mergeClasses is imported and used for ALL class combinations
 import {
     Table,
     TableHeader,
@@ -21,7 +20,7 @@ import {
     shorthands,
     Checkbox,
     Subtitle2,
-    mergeClasses, // <--- Crucial fix for the console error
+    mergeClasses, 
 } from "@fluentui/react-components";
 import { 
     Info20Regular, 
@@ -30,7 +29,7 @@ import {
     ArrowSortDownLines20Regular, 
     ArrowSortUpLines20Regular,
     ArrowSyncCheckmark20Regular, 
-    CheckmarkCircle20Regular,    
+    CheckmarkCircle20Regular,     
 } from "@fluentui/react-icons";
 
 // --- Configuration ---
@@ -89,7 +88,12 @@ const useStyles = makeStyles({
         backgroundColor: tokens.colorNeutralBackground1,
         borderRadius: tokens.borderRadiusLarge,
         boxShadow: tokens.shadow8, 
-        overflowX: 'auto', // Enables horizontal scrolling for the table on small screens
+        // This enables the scrollbar when inner content is wider
+        overflowX: 'auto', 
+    },
+    // 🚀 NEW: Define the minimum width for the actual table content
+    tableElement: {
+        minWidth: '950px', // Adjust this value to fit all columns without shrinking
     },
     sortableHeader: {
         cursor: 'pointer',
@@ -387,7 +391,8 @@ export default function TTResultsPage() {
             
             {/* --- TABLE (Professional Card Look) --- */}
             <div className={styles.tableCard}>
-                <Table>
+                {/* 🚀 Apply the min-width style here to enforce a wide table, triggering overflowX: 'auto' on the parent */}
+                <Table className={styles.tableElement}> 
                     <TableHeader>
                         <TableRow className={styles.tableHeaderRow}>
                             {/* Master Checkbox Header (Fixed Width) */}
@@ -404,7 +409,7 @@ export default function TTResultsPage() {
                             {columns.map(col => (
                                 <TableHeaderCell 
                                     key={col.key} 
-                                    // 🚀 CRITICAL FIX: Use mergeClasses to safely combine the sortable style and the fixed width style
+                                    // CRITICAL FIX: Use mergeClasses to safely combine the sortable style and the fixed width style
                                     className={mergeClasses(
                                         styles.sortableHeader, 
                                         col.key === 'status' && styles.statusCell // Conditionally applies fixed width to Status header
@@ -458,15 +463,15 @@ export default function TTResultsPage() {
 
                             </TableRow>
                         ))}
-                         {pageData.length === 0 && (
-                            <TableRow>
-                                <TableCell colSpan={8}>
-                                    <TableCellLayout>
-                                        No results found for the current filters.
-                                    </TableCellLayout>
-                                </TableCell>
-                            </TableRow>
-                        )}
+                           {pageData.length === 0 && (
+                                <TableRow>
+                                    <TableCell colSpan={8}>
+                                        <TableCellLayout>
+                                            No results found for the current filters.
+                                        </TableCellLayout>
+                                    </TableCell>
+                                </TableRow>
+                            )}
                     </TableBody>
                 </Table>
             </div>
