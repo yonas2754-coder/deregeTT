@@ -18,13 +18,13 @@ import { DashboardCharts } from "./ChartComponents"; // Assumed
 
 // --- Branding & Configuration ---
 const BRAND_COLOR_PRIMARY = tokens.colorPaletteGreenForeground1;
-const BRAND_COLOR_DARK = "#004B50"; // Dark teal/slate for contrast and professionalism
+const BRAND_COLOR_DARK = "#A5D166"; // Dark teal/slate for contrast and professionalism
 const NEUTRAL_DARK = tokens.colorNeutralForeground1;
 
 // 🚀 Professional Typography Change: The title and period are now styled together
 const REPORT_TITLE = "FSASS Task Analytics Report";
 const REPORT_PERIOD_TEXT = "From Oct 27 - Nov 2, 2025 (Week 43)";
-const FOOTER_TEXT = "Ethio Telecom | FSAS&S Section";
+const FOOTER_TEXT = "Ethio Telecom | FSASS Section";
 
 const CHART_INFO = [
     {
@@ -172,7 +172,7 @@ export const DashboardWithExport: React.FC = () => {
 
         // Master slide for Enterprise Look
         pptx.defineSlideMaster({
-            title: "ETHIO_MASTER",
+            title: "ETHIOTELECOM",
             bkgd: "FFFFFF",
             objects: [
                 // Footer strip
@@ -184,7 +184,7 @@ export const DashboardWithExport: React.FC = () => {
         });
 
         // Title slide
-        const titleSlide = pptx.addSlide({ masterName: "ETHIO_MASTER" });
+        const titleSlide = pptx.addSlide({ masterName: "ETHIO_TELECOM" });
         if(logoBase64) {
             titleSlide.addImage({ data: logoBase64, x: 0.3, y: 0.3, w: 1.62, h: 0.43 });
         }
@@ -206,7 +206,7 @@ export const DashboardWithExport: React.FC = () => {
             const img = chartsData[info.key as keyof ChartImageMap];
             if (!img) return;
 
-            const slide = pptx.addSlide({ masterName: "ETHIO_MASTER" });
+            const slide = pptx.addSlide({ masterName: "EthioTelecom" });
 
             // Logo top-left
             if(logoBase64) {
@@ -237,7 +237,7 @@ export const DashboardWithExport: React.FC = () => {
 
         // Summary slide
         const exportedCount = CHART_INFO.filter(c => chartsData[c.key as keyof ChartImageMap]).length;
-        const summarySlide = pptx.addSlide({ masterName: "ETHIO_MASTER" });
+        const summarySlide = pptx.addSlide({ masterName: "ETHIO_TELECOM" });
         if(logoBase64) {
             summarySlide.addImage({ data: logoBase64, x: 0.3, y: 0.3, w: 1.62, h: 0.43 });
         }
